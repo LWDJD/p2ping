@@ -5,6 +5,7 @@ import (
 	// "errors"
 	"os"
     "fmt"
+	"strings"
 	// "strconv"
 	"time"
 	// "encoding/hex"
@@ -19,6 +20,7 @@ import (
 	// dht "github.com/libp2p/go-libp2p-kad-dht"
 )
 
+var versions string = "1.0.1"
 func main(){
 	// fmt.Println("开始运行\n")
 
@@ -41,19 +43,43 @@ func main(){
         panic(err)
     }
 
-	if len(os.Args) > 1 {
-		if len(os.Args) > 2{
-			fmt.Print("P2Ping Error：未知参")
-		}else{
-			fmt.Println("\n正在 Ping "+os.Args[1]+" 具有 32 字节的数据:")
-			err := Ping(node,os.Args[1],4)
-			if err != nil{
-				fmt.Println("P2Ping Error：",err,"\n")
+	switch len(os.Args) {
+		case 1:
+			fmt.Println("P2Ping Error：无参")
+			help()
+		case 2:
+			switch strings.ToLower(os.Args[1]){
+				case "-v":
+					fmt.Println("\np2ping版本：v"+versions)
+				case "help":
+					help()
+				case "explain":
+					explain()
+				default:
+					err := Ping(node,os.Args[1],4)
+					if err != nil{
+						fmt.Println("P2Ping Error：",err,"\n")
+						fmt.Println(`输入 p2ping help 获得帮助`)
+					}
 			}
-		}
-	} else {
-		fmt.Print("P2Ping Error：无参")
+		default:
+			fmt.Println("P2Ping Error：未知参")
+			help()
 	}
+
+	// if len(os.Args) > 1 {
+	// 	if len(os.Args) > 2{
+	// 		fmt.Println("P2Ping Error：未知参")
+	// 	}else{
+	// 		fmt.Println("\n正在 Ping "+os.Args[1]+" 具有 32 字节的数据:")
+	// 		err := Ping(node,os.Args[1],4)
+	// 		if err != nil{
+	// 			fmt.Println("P2Ping Error：",err,"\n")
+	// 		}
+	// 	}
+	// } else {
+	// 	fmt.Println("P2Ping Error：无参")
+	// }
 
     // 打印节点的侦听地址
     // fmt.Println("监听地址:", node.Addrs(), "\n")
@@ -96,7 +122,9 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 	}
 	ch := ping.Ping(context.Background(),node,peer.ID)
 	var times []time.Duration
+	fmt.Println("\n正在 Ping "+os.Args[1]+" 具有 32 字节的数据:")
 	for i := 0; i < quantity; i++ {
+		time.Sleep(1 * time.Second)
 		res := <-ch
 		if res.RTT.Nanoseconds()==0{
 			fmt.Println("请求失败。")
@@ -105,7 +133,6 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 		}
 		
 		times = append(times,res.RTT)
-		time.Sleep(1 * time.Second)
 	}
 
 	var stat int = quantity
@@ -130,10 +157,40 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 	fmt.Println()
 	fmt.Println(peer.ID,"的 Ping 统计信息:\n    数据包: 已发送 =",quantity,"，已接收 =",stat,"，丢失 =",quantity-stat," (",((float64(quantity-stat) / float64(quantity)) * 100),"% 丢失)，")
 	average = average / time.Duration(q)
-	fmt.Println("往返行程的估计时间:\n    最短 = ",times[s],"，最长 = ",times[l],"，平均 = ",average)
+	fmt.Println("往返行程的估计时间:\n    最短 = ",times[s],"，最长 = ",times[l],"，平均 = ",average,"\n")
 	return nil
 }
 
+func help(){
+	fmt.Println(`
+p2ping 帮助：
+p2ping {multiaddr} : 对这个多地址进行ping操作
+p2ping -v          : 显示版本号
+p2ping explain     : 显示说明
+p2ping help        : 显示帮助
+`)
+}
+
+func explain(){
+	fmt.Println(`
+解释：
+1.multiaddr是libp2p节点所使用的一种地址表示方式，可以表达多种协议：
+    举例：
+    /ip4/1.2.3.4/tcp/1234/p2p/12D3KooWKS71s4iCRVHmdCp1Mg6dJTckiZdhRf77J7dgwJsybvri
+        表示 IPv4 地址 1.2.3.4，端口 1234，使用 TCP 协议；
+        /p2p/12D3KooWKS71s4iCRVHmdCp1Mg6dJTckiZdhRf77J7dgwJsybvri
+        表示 点对点 连接使用此ID的节点；
+    /ip6/[::1]/udp/5678/quic-v1/p2p/12D3KooWKS71s4iCRVHmdCp1Mg6dJTckiZdhRf77J7dgwJsybvri
+        表示 IPv6 地址 [::1]，端口 5678，使用 UDP 协议上的QUIC-V1协议；
+        /p2p/12D3KooWKS71s4iCRVHmdCp1Mg6dJTckiZdhRf77J7dgwJsybvri
+        表示 点对点 连接使用此ID的节点；
+
+2.节点ID 是由base58编码的地址，与以太坊地址类似;
+    节点ID : 由公钥生成，用于身份验证 与 kad DHT存储标识；
+    公钥   : 由私钥生成，用于身份验证；
+    生成过程单向，无法反推。
+`)
+}
 // func Status(node host.Host) error{
 // 	if node ==nil{
 // 		return errors.New("Status(node host.Host)节点不能为空")
