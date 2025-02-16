@@ -225,10 +225,11 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 func help(){
 	fmt.Println(`
 p2ping 帮助：
-p2ping {multiaddr} : 对这个多地址进行ping操作
-p2ping -v          : 显示版本号
-p2ping explain     : 显示说明
-p2ping help        : 显示帮助
+p2ping {multiaddr} # 对这个多地址进行ping操作
+p2ping {peer ID}   # 对这个节点ID进行DHT查询 并ping操作
+p2ping -v          # 显示版本号
+p2ping explain     # 显示说明
+p2ping help        # 显示帮助
 `)
 }
 
@@ -247,8 +248,8 @@ func explain(){
         表示 点对点 连接使用此ID的节点；
 
 2.节点ID 是由base58编码的地址，与比特币地址类似;
-    节点ID : 由公钥生成，用于身份验证 与 kad DHT存储标识；
-    公钥   : 由私钥生成，用于身份验证；
+    节点ID # 由公钥生成，作为身份标识；
+    公钥   # 由私钥生成，用于身份验证；
     生成过程单向，无法反推。
 `)
 }
