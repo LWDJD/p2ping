@@ -10,7 +10,7 @@
 ### 命令
 ```bash
 p2ping {multiaddr} # 对这个多地址进行 ping 操作
-p2ping {peer ID}   # 对这个节点ID进行DHT查询 并 ping 操作
+p2ping {peer ID}   # 对这个节点ID进行DHT查询 并ping操作
 p2ping -v          # 显示版本号
 p2ping explain     # 显示说明
 p2ping help        # 显示帮助
