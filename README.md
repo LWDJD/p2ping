@@ -28,7 +28,7 @@ p2ping help        # 显示帮助
         /p2p/12D3KooWKS71s4iCRVHmdCp1Mg6dJTckiZdhRf77J7dgwJsybvri
         表示 点对点 连接使用此ID的节点；
 
-2.节点ID 是由base58编码的地址，与以太坊地址类似;
+2.节点ID 是由base58编码的地址，与比特币地址类似;
     节点ID : 由公钥生成，用于身份验证 与 kad DHT存储标识；
     公钥   : 由私钥生成，用于身份验证；
     生成过程单向，无法反推。
