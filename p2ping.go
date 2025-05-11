@@ -20,7 +20,7 @@ import (
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 )
 
-var versions string = "1.1.0"
+var version string = "1.1.1"
 func main(){
 	// fmt.Println("开始运行\n")
 
@@ -49,8 +49,8 @@ func main(){
 			help()
 		case 2:
 			switch strings.ToLower(os.Args[1]){
-				case "-v":
-					fmt.Println("\np2ping版本：v"+versions+"\n")
+				case "-v","-version","--v","--version","v","version":
+					fmt.Println("\np2ping版本：v"+version+"\n")
 				case "help":
 					help()
 				case "explain":
@@ -183,8 +183,8 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 	for i := 0; i < quantity; i++ {
 		time.Sleep(1 * time.Second)
 		res := <-ch
-		if res.RTT.Nanoseconds()==0{
-			fmt.Println("请求失败。")
+		if res.Error!= nil{
+			fmt.Println("请求失败:", res.Error)
 		}else {
 			fmt.Println("来自", addrInfo.ID, "的回复: 时间", res.RTT)
 		}
