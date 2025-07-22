@@ -178,7 +178,7 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 	// fmt.Println("记录点D")
 	ch := ping.Ping(context.Background(),node,addrInfo.ID)
 	// fmt.Println("记录点E")
-	var times []time.Duration
+	var pings []ping.Result
 	fmt.Println("\n正在 Ping "+os.Args[1]+" 具有 32 字节的数据:")
 	for i := 0; i < quantity; i++ {
 		time.Sleep(1 * time.Second)
@@ -189,7 +189,7 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 			fmt.Println("来自", addrInfo.ID, "的回复: 时间", res.RTT)
 		}
 		
-		times = append(times,res.RTT)
+		pings = append(pings,res)
 	}
 
 	var stat int = quantity
@@ -197,17 +197,17 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 	var l int
 	var q int
 	var average time.Duration
-	for i :=0; i < len(times); i++{
-		if times[i].Nanoseconds()==0{
+	for i :=0; i < len(pings); i++{
+		if pings[i].Error!= nil{
 			stat--
 		}else {
-			average+=times[i]
+			average+=pings[i].RTT
 			q++
-			if times[s].Nanoseconds()>times[i].Nanoseconds(){
+			if pings[s].RTT.Nanoseconds()>pings[i].RTT.Nanoseconds(){
 				s = i	
 			}
 		}
-		if times[l].Nanoseconds()<times[i].Nanoseconds(){
+		if pings[l].RTT.Nanoseconds()<pings[i].RTT.Nanoseconds(){
 			l = i
 		}
 	}
@@ -215,7 +215,8 @@ func Ping(node host.Host,addrStr string,quantity int) error{
 	fmt.Println(addrInfo.ID,"的 Ping 统计信息:\n    数据包: 已发送 =",quantity,"，已接收 =",stat,"，丢失 =",quantity-stat," (",((float64(quantity-stat) / float64(quantity)) * 100),"% 丢失)，")
 	if average.Nanoseconds() != 0{
 		average = average / time.Duration(q)
-		fmt.Println("往返行程的估计时间:\n    最短 = ",times[s],"，最长 = ",times[l],"，平均 = ",average,"\n")
+		fmt.Println("往返行程的估计时间:\n    最短 = ",pings[s].RTT,"，最长 = ",pings[l].RTT,"，平均 = ",average,"\n")
+
 	}else{
 		fmt.Println()
 	}
